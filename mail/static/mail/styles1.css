@@ -1,0 +1,14 @@
+textarea {
+    min-height: 400px;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+
+.para {
+    width: 60px;
+    background-color: red;
+  }

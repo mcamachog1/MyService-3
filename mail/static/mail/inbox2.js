@@ -1,0 +1,285 @@
+
+  // Objeto global para guardar un email
+  let email_fetch = {sender: '', subject: '', body: '', date: ''};
+
+  document.addEventListener('DOMContentLoaded', function () {
+    
+    // Use buttons to toggle between views
+    document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
+    document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
+    document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
+    document.querySelector('#compose').addEventListener('click', () => compose_email(''));
+    email_view = document.querySelector('#email-view')
+    // Send the email
+
+    document.querySelector('#send-email').addEventListener('click', send_email);
+
+    // By default, load the inbox
+    load_mailbox('inbox');
+
+  });
+
+
+  function compose_email(replay_to) {
+
+
+    // Show compose view and hide other views
+    document.querySelector('#emails-view').style.display = 'none';
+    document.querySelector('#compose-view').style.display = 'block';
+    email_view.style.display = 'none';
+
+    if (replay_to === '') {
+    // Clear out composition fields
+    document.querySelector('#compose-recipients').value = '';
+    document.querySelector('#compose-subject').value = '';
+
+    }
+
+    else {
+    // Fill some known information
+    document.querySelector('#compose-body').value = `On ${email_fetch.date} ${email_fetch.sender} wrote:\n\n` + `${email_fetch.body}`
+    console.log("string text line 1\n" + "string text line 2");
+    document.querySelector('#compose-recipients').value = email_fetch.sender;
+    let prefijo = email_fetch.subject.substring(0, 3)
+    if (prefijo === 'Re:')
+      document.querySelector('#compose-subject').value = email_fetch.subject;
+    else 
+      document.querySelector('#compose-subject').value = `Re: ${email_fetch.subject}`;
+    console.log(email_fetch.date)
+    }
+
+  }
+  function archivar_email(id) {
+    fetch(`/emails/${id}`)
+      .then(response => response.json())
+      .then(email => {
+
+        let sender = email.sender
+        let subject = email.subject
+        let timestamp = email.timestamp
+      });
+
+    fetch(`/emails/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        sender: sender,
+        subject: subject,
+        timestamp: timestamp,
+        archived: true
+      })
+    })
+    load_mailbox('inbox');
+  }
+  function unarchive_email(id) {
+    fetch(`/emails/${id}`)
+      .then(response => response.json())
+      .then(email => {
+
+        let sender = email.sender
+        let subject = email.subject
+        let timestamp = email.timestamp
+      });
+
+    fetch(`/emails/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        sender: sender,
+        subject: subject,
+        timestamp: timestamp,
+        archived: false
+      })
+    })
+    load_mailbox('inbox');
+  }
+
+  function reply_email(id) {
+    // alert('reply email')
+    
+    compose_email(`${id}`)
+  }
+
+  function leer_email(id, mailbox) {
+    console.log(email_fetch);
+    document.querySelector('#emails-view').style.display = 'none';
+    document.querySelector('#compose-view').style.display = 'none';
+    email_view.style.display = 'block'
+
+    boton_reply = document.querySelector('#reply')
+    boton_reply.addEventListener('click', () => reply_email(id));
+
+    if (mailbox == 'inbox') {
+      boton_archivar = document.querySelector('#archive-button')
+      boton_archivar.addEventListener('click', () => archivar_email(id));
+      boton_archivar.innerHTML = 'Archive'
+    }
+    else if (mailbox == 'archive') {
+      boton_archivar = document.querySelector('#archive-button')
+      boton_archivar.innerHTML = 'Unarchive'
+      boton_archivar.addEventListener('click', () => unarchive_email(id));
+    }
+
+    fetch(`/emails/${id}`)
+      .then(response => response.json())
+      .then(email => {
+        // Print email
+        console.log(email);
+        email_fetch.sender = email.sender
+        email_fetch.body = email.body
+        email_fetch.date = email.timestamp
+        email_fetch.subject = email.subject
+        document.querySelector('#from').innerHTML = `<strong> From: </strong> ${email.sender}`
+        document.querySelector('#to').innerHTML = `<strong> To: </strong> ${email.recipients}`
+        document.querySelector('#subject').innerHTML = `<strong> Subject: </strong> ${email.subject}`
+        document.querySelector('#timestamp').innerHTML = `<strong> Timestamp: </strong> ${email.timestamp}`
+        document.querySelector('#email-body').innerHTML = `${email.body}`
+      });
+
+    fetch(`/emails/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        read: true
+      })
+    })
+
+
+  }
+
+  function send_email() {
+    fetch('/emails', {
+      method: 'POST',
+      body: JSON.stringify({
+        recipients: document.querySelector('#compose-recipients').value,
+        subject: document.querySelector('#compose-subject').value,
+        body: document.querySelector('#compose-body').value
+      })
+    })
+      .then(response => response.json())
+      .then(result => {
+        // Print result
+        console.log(result);
+      });
+  }
+
+  function load_mailbox(mailbox) {
+
+    // crear div para leer correo
+
+
+    document.querySelector('body').append(email_view);
+    // Show the mailbox and hide other views
+    document.querySelector('#emails-view').style.display = 'block';
+    document.querySelector('#compose-view').style.display = 'none';
+    email_view.style.display = 'none'
+
+    // Show the mailbox name
+    document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+    let list = document.createElement("ul")
+    document.querySelector("#emails-view").appendChild(list)
+    if (mailbox == "inbox") {
+      fetch('/emails/inbox')
+        .then(response => response.json())
+        .then(emails => {
+          // Print emails
+          console.log(emails);
+
+          // ... do something else with emails ...
+          for (let i = 0; i < emails.length; i++) {
+            // console.log(emails[i].sender,emails[i].subject);
+            let myli = document.createElement("li");
+            myli.setAttribute("class", "d-flex justify-content-between border border-dark p-1")
+            if (emails[i].read == true) {
+              myli.classList.add("leido");
+            }
+            myli.addEventListener('click', () => leer_email(emails[i].id, 'inbox'));
+
+            sender = document.createElement("span")
+            sender.innerHTML = emails[i].sender
+            subject = document.createElement("span")
+            subject.innerHTML = emails[i].subject
+            timestamp = document.createElement("span")
+            timestamp.innerHTML = emails[i].timestamp
+            myli.appendChild(sender)
+            myli.appendChild(subject)
+            myli.appendChild(timestamp)
+            list.appendChild(myli)
+
+          }
+
+        });
+    }
+
+    if (mailbox == "sent") {
+      fetch('/emails/sent')
+        .then(response => response.json())
+        .then(emails => {
+          // Print emails
+          console.log(emails);
+
+          // ... do something else with emails ...
+          const largo_destinatarios = 25
+          for (let i = 0; i < emails.length; i++) {
+            let two_recipients = emails[i].recipients[0]
+
+            if (emails[i].recipients.length > 1) {
+
+              two_recipients = emails[i].recipients[0] + ", " + emails[i].recipients[1]
+            }
+            let para = two_recipients.substring(0, largo_destinatarios)
+            if (two_recipients.length > largo_destinatarios - 1) {
+              para = two_recipients.substring(0, largo_destinatarios) + "...";
+            }
+            console.log(para)
+
+            let myli = document.createElement("li");
+            myli.setAttribute("class", "d-flex justify-content-between border border-dark p-1")
+            recipients = document.createElement("span")
+            recipients.setAttribute("class", "para")
+            recipients.innerHTML = para.padEnd(largo_destinatarios, ' ')
+            console.log(para)
+            subject = document.createElement("span")
+            subject.innerHTML = emails[i].subject
+            timestamp = document.createElement("span")
+            timestamp.innerHTML = emails[i].timestamp
+            myli.appendChild(recipients)
+            myli.appendChild(subject)
+            myli.appendChild(timestamp)
+            list.appendChild(myli)
+
+          }
+
+        });
+    }
+
+    if (mailbox == "archive") {
+      fetch('/emails/archive')
+        .then(response => response.json())
+        .then(emails => {
+          // Print emails
+          console.log(emails);
+
+          // ... do something else with emails ...
+          for (let i = 0; i < emails.length; i++) {
+            // console.log(emails[i].sender,emails[i].subject);
+            let myli = document.createElement("li");
+            myli.setAttribute("class", "d-flex justify-content-between border border-dark p-1")
+            if (emails[i].read == true) {
+              myli.classList.add("leido");
+            }
+            myli.addEventListener('click', () => leer_email(emails[i].id, 'archive'));
+            sender = document.createElement("span")
+            sender.innerHTML = emails[i].sender
+            subject = document.createElement("span")
+            subject.innerHTML = emails[i].subject
+            timestamp = document.createElement("span")
+            timestamp.innerHTML = emails[i].timestamp
+            myli.appendChild(sender)
+            myli.appendChild(subject)
+            myli.appendChild(timestamp)
+            list.appendChild(myli)
+
+          }
+
+        });
+    }
+
+  }
