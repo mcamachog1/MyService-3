@@ -2,35 +2,44 @@
 {% load static %}
 
 {% block body %}
-<h1>Bienvenido a MyService</h1>
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="#">Navbar</a>
+  <a  class="navbar-brand" 
+      href="https://aresolver.wordpress.com/"
+      target="_blank"
+  >
+    <img 
+      src="../../static/mail/logo-aresolver.jpeg" 
+      alt="logo de aresolver"
+      width="50px"
+    >
+  </a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse" id="navbarNav">
     <ul class="navbar-nav">
       <li class="nav-item active">
-        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+        <a class="nav-link" href="#">Inicio <span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Features</a>
+        <a class="nav-link" href="#">Mis usuarios</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Pricing</a>
+        <a class="nav-link" href="#">Mis clientes</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link disabled" href="#">Disabled</a>
+        <a class="nav-link disabled" href="#">Confirmaciones</a>
       </li>
     </ul>
   </div>
 </nav>
-
 <!-- Fin Navbar -->
-<ul>
-{% for estudiante in estudiantes %}
-	<li>{{estudiante.nombre}}, {{estudiante.apellido}}</li>
-{% endfor %}
-</ul>
+<div class="container-fluid ">
+  <ul class="mb-3">Mis usuarios
+  {% for estudiante in estudiantes %}
+    <li>{{estudiante.nombre}}, {{estudiante.apellido}}</li>
+  {% endfor %}
+  </ul>
+</div>
 {% endblock %}

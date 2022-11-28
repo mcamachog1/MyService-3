@@ -1,4 +1,4 @@
-mail/mail/__pycache__/
-mail/mail/migrations/__pycache__/
-mail/project3/__pycache__/
-mail/db.sqlite3
+mail/__pycache__/
+mail/migrations/__pycache__/
+project3/__pycache__/
+db.sqlite3
