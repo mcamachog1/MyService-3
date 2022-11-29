@@ -179,3 +179,35 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "mail/register.html")
+
+
+# funciones de myservice
+@csrf_exempt
+@login_required
+def estudiante_nuevo(request):
+    # Un nuevo estudiante se debe crear via POST
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    # Obtener el nombre y el apellido del estudiante
+    data = json.loads(request.body)
+    nombre = data.get("nombre","")
+    apellido = data.get("apellido","")
+    emails = [email.strip() for email in data.get("recipients").split(",")]
+    if nombre == "" or apellido == "":
+        return JsonResponse({
+            "error": "Debe indicar nombre o apellido."
+        }, status=400)
+    # Crear el estudiante
+    estudiante = Estudiante(
+        nombre=nombre,
+        apellido=apellido
+    )
+    estudiante.save()
+    return JsonResponse({"message": "Estudiante/Usuario agregado exitosamente."}, status=201)
+
+@login_required
+def estudiante(request):
+    return render(request, "mail/estudiante.html",{
+    'estudiantes': Estudiante.objects.all(),
+})
+

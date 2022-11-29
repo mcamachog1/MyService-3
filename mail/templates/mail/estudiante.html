@@ -1,0 +1,55 @@
+{% extends "mail/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+
+<div id="compose-view">
+  <h3>Nuevo estudiante</h3>
+  <form id="compose-form">
+    <div class="form-group">
+      <input class="form-control" id="nombre" name="nombre" placeholder="Nombre">
+    </div>
+    <div class="form-group">
+        <input class="form-control" id="apellido" name="apellido" placeholder="Apellido">
+      </div>    
+    <input id="send-email" type="submit" class="btn btn-primary" />
+  </form>
+  <a class="btn btn-primary" href="{% url 'index' %}">Inicio</a>
+</div>
+{% endblock %}
+
+{% block script %}
+<!-- <script src="{% static 'mail/inbox2.js' %}"></script> -->
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Crear estudiante
+    document.querySelector('#send-email').addEventListener('click', () => send_email());
+    
+
+  });
+
+
+function send_email() {
+    console.log('dentro')
+    alert('no se ejecuta')
+    console.log('dentro')
+    fetch('/emails/new', {
+      method: 'POST',
+      body: JSON.stringify({
+        nombre: querySelector('#nombre').value,
+        apellido: document.querySelector('#apellido').value
+      })
+    })
+      .then(response => response.json())
+      .then(result => {
+        // Print result
+        console.log(result);
+      });
+  }
+
+
+</script>
+
+{% endblock %}
